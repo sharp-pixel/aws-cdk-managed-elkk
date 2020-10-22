@@ -1,13 +1,14 @@
 # modules
-import os
-import logging
-import requests
-import json
 import base64
-from typing import Optional, Tuple, Union
-import boto3
+import json
+import logging
+import os
 from io import BytesIO
+from typing import Optional, Tuple, Union
 from urllib.parse import urlencode
+
+import boto3
+import requests
 
 s3 = boto3.client("s3")
 
@@ -39,7 +40,7 @@ LOGGING_LEVELS = {
 }
 
 # utils
-if len(logging.getLogger().handlers) > 0:
+if logging.getLogger().handlers:
     # The Lambda environment pre-configures a handler logging to stderr.
     # If a handler is already configured,
     # `.basicConfig` does not execute. Thus we set the level directly.
@@ -81,10 +82,10 @@ def generate_url(event: dict) -> Tuple[str, Optional[str]]:
 
 
 def exception_response(
-    e: requests.RequestException,
-    body: Union[str, bytes, dict],
-    params: Optional[str],
-    clean_headers: dict,
+        e: requests.RequestException,
+        body: Union[str, bytes, dict],
+        params: Optional[str],
+        clean_headers: dict,
 ):
     try:
         error = str(e.response.reason)
@@ -156,8 +157,8 @@ def proxy_headers(event: dict) -> dict:
         k: v
         for k, v in event["headers"].items()
         if k.lower().startswith("x-amz")
-        or k.lower().startswith("kbn-")
-        or k.lower() in ACCEPTED_HEADERS
+           or k.lower().startswith("kbn-")
+           or k.lower() in ACCEPTED_HEADERS
     }
 
 
@@ -167,8 +168,8 @@ def valid_request():
 
 def choose_request_func(event: dict) -> callable:
     if (
-        event.get("queryStringParameters")
-        and "method" in event["queryStringParameters"].keys()
+            event.get("queryStringParameters")
+            and "method" in event["queryStringParameters"].keys()
     ):
         return METHOD_MAP[event["queryStringParameters"]["method"].lower()]
     else:
@@ -176,7 +177,7 @@ def choose_request_func(event: dict) -> callable:
 
 
 def send_to_es(
-    url: str, body: dict, headers: dict, request_func: callable
+        url: str, body: dict, headers: dict, request_func: callable
 ) -> Tuple[Union[bytes, str], str]:
     # send the request to ES
     response = request_func(url, data=body, headers=headers)

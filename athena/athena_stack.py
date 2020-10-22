@@ -1,8 +1,10 @@
 # import modules
-from aws_cdk import core, aws_s3 as s3, aws_iam as iam, aws_glue as glue
-from helpers.custom_resource import CustomResource
-from helpers.constants import constants
 import os
+
+from aws_cdk import core, aws_s3 as s3, aws_iam as iam
+
+from helpers.constants import constants
+from helpers.custom_resource import CustomResource
 
 # set path
 dirname = os.path.dirname(__file__)
@@ -34,8 +36,7 @@ class AthenaStack(core.Stack):
             ],
         )
         # tag the bucket
-        core.Tag.add(self.s3_bucket, "project", constants["PROJECT_TAG"])
-
+        core.Tags.of(self.s3_bucket).add("project", constants["PROJECT_TAG"])
         # lambda policies
         athena_bucket_empty_policy = [
             iam.PolicyStatement(
@@ -43,7 +44,7 @@ class AthenaStack(core.Stack):
             ),
             iam.PolicyStatement(
                 effect=iam.Effect.ALLOW,
-                actions=["s3:DeleteObject",],
+                actions=["s3:DeleteObject", ],
                 resources=[f"{self.s3_bucket.bucket_arn}/*"],
             ),
         ]

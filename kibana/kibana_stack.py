@@ -1,6 +1,8 @@
 # import modules
 import os
+import pathlib
 from subprocess import call
+
 from aws_cdk import (
     core,
     aws_lambda as lambda_,
@@ -10,33 +12,30 @@ from aws_cdk import (
     aws_iam as iam,
     aws_logs as logs,
 )
-import pathlib
-
 from aws_cdk.aws_cloudfront import CfnDistribution
 
 from helpers.constants import constants
 from helpers.custom_resource import CustomResource
-from helpers.functions import elastic_get_endpoint, elastic_get_domain
 
 dirname = os.path.dirname(__file__)
 
 
 class KibanaStack(core.Stack):
     def __init__(
-        self,
-        scope: core.Construct,
-        id_: str,
-        vpc_stack,
-        elastic_stack,
-        update_lambda_zip=False,
-        **kwargs,
+            self,
+            scope: core.Construct,
+            id_: str,
+            vpc_stack,
+            elastic_stack,
+            update_lambda_zip=False,
+            **kwargs,
     ) -> None:
         super().__init__(scope, id_, **kwargs)
 
         # if update lambda zip (including if zip doesn't exist)
         if (
-            update_lambda_zip
-            or not pathlib.Path(os.path.join(dirname, "kibana_lambda.zip")).exists()
+                update_lambda_zip
+                or not pathlib.Path(os.path.join(dirname, "kibana_lambda.zip")).exists()
         ):
             # rebuild the lambda if changed
             call(["docker", "build", "--tag", "kibana-lambda", "."], cwd=dirname)
@@ -55,7 +54,7 @@ class KibanaStack(core.Stack):
             removal_policy=core.RemovalPolicy.DESTROY,
         )
         # tag the bucket
-        core.Tag.add(kibana_bucket, "project", constants["PROJECT_TAG"])
+        core.Tags.of(kibana_bucket).add("project", constants["PROJECT_TAG"])
 
         # the lambda behind the api
         kibana_lambda = lambda_.Function(
@@ -71,10 +70,10 @@ class KibanaStack(core.Stack):
             log_retention=logs.RetentionDays.ONE_WEEK,
         )
         # tag the lambda
-        core.Tag.add(kibana_lambda, "project", constants["PROJECT_TAG"])
+        core.Tags.of(kibana_lambda).add("project", constants["PROJECT_TAG"])
         # create policies for the lambda
         kibana_lambda_policy = iam.PolicyStatement(
-            effect=iam.Effect.ALLOW, actions=["s3:*",], resources=["*"],
+            effect=iam.Effect.ALLOW, actions=["s3:*", ], resources=["*"],
         )
         # add the role permissions
         kibana_lambda.add_to_role_policy(statement=kibana_lambda_policy)
@@ -84,7 +83,7 @@ class KibanaStack(core.Stack):
             self, "kibana_api", handler=kibana_lambda, binary_media_types=["*/*"]
         )
         # tag the api gateway
-        core.Tag.add(kibana_api, "project", constants["PROJECT_TAG"])
+        core.Tags.of(kibana_api).add("project", constants["PROJECT_TAG"])
 
         kibana_identity = cloudfront.OriginAccessIdentity(self, "kibana_identity")
 
@@ -142,7 +141,7 @@ class KibanaStack(core.Stack):
             ],
         )
         # tag the cloudfront distribution
-        core.Tag.add(kibana_distribution, "project", constants["PROJECT_TAG"])
+        core.Tags.of(kibana_distribution).add("project", constants["PROJECT_TAG"])
         # needs api and bucket to be available
         kibana_distribution.node.add_dependency(kibana_api)
 
@@ -153,7 +152,7 @@ class KibanaStack(core.Stack):
             ),
             iam.PolicyStatement(
                 effect=iam.Effect.ALLOW,
-                actions=["s3:DeleteObject",],
+                actions=["s3:DeleteObject", ],
                 resources=[f"{kibana_bucket.bucket_arn}/*"],
             ),
         ]
@@ -168,9 +167,9 @@ class KibanaStack(core.Stack):
             BucketName=kibana_bucket.bucket_name,
             ResourcePolicies=kibana_bucket_empty_policy,
         )
-        # tag the lamdbda
-        core.Tag.add(kibana_bucket_empty, "project", constants["PROJECT_TAG"])
-        # needs a dependancy
+        # tag the lambda
+        core.Tags.of(kibana_bucket_empty).add("project", constants["PROJECT_TAG"])
+        # needs a dependency
         kibana_bucket_empty.node.add_dependency(kibana_bucket)
 
         # kibana lambda update policies
@@ -200,9 +199,9 @@ class KibanaStack(core.Stack):
             HandlerPath=os.path.join(dirname, "../helpers/lambda_env_update.py"),
             ResourcePolicies=kibana_lambda_update_policy,
         )
-        # tag the lamdbda
-        core.Tag.add(kibana_lambda_update, "project", constants["PROJECT_TAG"])
-        # needs a dependancy
+        # tag the lambda
+        core.Tags.of(kibana_lambda_update).add("project", constants["PROJECT_TAG"])
+        # needs a dependency
         kibana_lambda_update.node.add_dependency(kibana_bucket)
         kibana_lambda_update.node.add_dependency(kibana_distribution)
 
@@ -213,4 +212,3 @@ class KibanaStack(core.Stack):
             description="Kibana Web Url",
             export_name="kibana-link",
         )
-

@@ -2,16 +2,17 @@
 
 # import modules
 import os
+
 from aws_cdk import core
 
+from athena.athena_stack import AthenaStack
+from elastic.elastic_stack import ElasticStack
+from filebeat.filebeat_stack import FilebeatStack
+from kafka.kafka_stack import KafkaStack
+from kibana.kibana_stack import KibanaStack
+from logstash.logstash_stack import LogstashStack
 # import cdk classes
 from vpc.vpc_stack import VpcStack
-from kafka.kafka_stack import KafkaStack
-from elastic.elastic_stack import ElasticStack
-from logstash.logstash_stack import LogstashStack
-from filebeat.filebeat_stack import FilebeatStack
-from athena.athena_stack import AthenaStack
-from kibana.kibana_stack import KibanaStack
 
 app = core.App()
 

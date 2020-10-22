@@ -3,15 +3,17 @@ from aws_cdk import (
     core,
     aws_ec2 as ec2,
 )
+
 from helpers.constants import constants
+
 
 class VpcStack(core.Stack):
     def __init__(self, scope: core.Construct, id: str, **kwargs) -> None:
         super().__init__(scope, id, **kwargs)
 
         # create the vpc
-        self.elkk_vpc = ec2.Vpc(self, "elkk_vpc", max_azs=3,)
-        core.Tag.add(self.elkk_vpc, "project", constants["PROJECT_TAG"])
+        self.elkk_vpc = ec2.Vpc(self, "elkk_vpc", max_azs=3)
+        core.Tags.of(self.elkk_vpc).add("project", constants["PROJECT_TAG"])
         # add s3 endpoint
         self.elkk_vpc.add_gateway_endpoint(
             "e6ad3311-f566-426e-8291-6937101db6a1",

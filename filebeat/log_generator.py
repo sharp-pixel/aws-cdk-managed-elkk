@@ -1,16 +1,16 @@
 #!/usr/bin/env python3
 
+import argparse
+import datetime
+import json
+import random
 # get modules
 import time
-import datetime
-import random
+import uuid
+from pathlib import Path
+
 from faker import Faker
 from tzlocal import get_localzone
-from pathlib import Path
-import argparse
-import uuid
-import json
-import sys
 
 local = get_localzone()
 faker = Faker()
@@ -63,7 +63,6 @@ parser.add_argument(
     default=1,
 )
 
-
 # read the args
 args = parser.parse_args()
 
@@ -75,7 +74,6 @@ sku = {
 
 
 def main():
-
     # how many files
     for fls in range(args.files_number):
         # string for the output
@@ -163,7 +161,7 @@ def main():
         # write out the file
         if args.output_type == "LOG":
             filename = f"{args.event_type}/access_log_{timestr}.log"
-            print(fls+1, filename)
+            print(fls + 1, filename)
             Path(args.event_type).mkdir(parents=True, exist_ok=True)
             # write out the files
             with open(filename, "w", encoding="utf-8") as f:
@@ -176,7 +174,7 @@ def main():
             elif args.event_type == "appevent":
                 print(json.dumps(eventrows, ensure_ascii=False, indent=4))
 
-        if fls != args.files_number-1:
+        if fls != args.files_number - 1:
             time.sleep(30)
 
 

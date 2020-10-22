@@ -56,7 +56,7 @@ class LogstashStack(core.Stack):
                 if err.response["Error"]["Code"] in ["NoSuchTagSet", "NoSuchBucket"]:
                     pass
                 else:
-                    print(f"Unexpectedd error: {err}")
+                    print(f"Unexpected error: {err}")
 
         # get elastic endpoint
         esclient = boto3.client("es")
@@ -101,8 +101,8 @@ class LogstashStack(core.Stack):
             description="logstash security group",
             allow_all_outbound=True,
         )
-        core.Tag.add(logstash_security_group, "project", constants["PROJECT_TAG"])
-        core.Tag.add(logstash_security_group, "Name", "logstash_sg")
+        core.Tags.of(logstash_security_group).add("project", constants["PROJECT_TAG"])
+        core.Tags.of(logstash_security_group).add("Name", "logstash_sg")
 
         # Open port 22 for SSH
         logstash_security_group.add_ingress_rule(
@@ -289,7 +289,7 @@ class LogstashStack(core.Stack):
                 ),
             )
 
-            # add permissisons to the task
+            # add permissions to the task
             logstash_task.add_to_task_role_policy(access_s3_policy)
             logstash_task.add_to_task_role_policy(access_elastic_policy)
 

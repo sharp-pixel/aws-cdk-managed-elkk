@@ -18,8 +18,7 @@ constants = {
     "ELASTIC_MASTER_INSTANCE": "r5.large.elasticsearch",
     "ELASTIC_INSTANCE_COUNT": 3,
     "ELASTIC_INSTANCE": "r5.large.elasticsearch",
-    "ELASTIC_VERSION": "7.1",
+    "ELASTIC_VERSION": "7.7",
     # Logstash
     "LOGSTASH_INSTANCE": "t2.xlarge",
 }
-

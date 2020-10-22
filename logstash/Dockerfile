@@ -1,4 +1,4 @@
-FROM docker.elastic.co/logstash/logstash:7.6.0
+FROM docker.elastic.co/logstash/logstash:7.7.0
 # remove conf as want to place custom pipeline
 RUN rm -f /usr/share/logstash/pipeline/logstash.conf
 # set the pipeline

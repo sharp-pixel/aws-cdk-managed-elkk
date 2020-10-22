@@ -1,16 +1,15 @@
 # modules
-import os
-import boto3
-from botocore.exceptions import ClientError
-from helpers.constants import constants
 from pathlib import Path
-import hashlib
+
+import boto3
 from aws_cdk import (
     core,
     aws_ec2 as ec2,
     aws_iam as iam,
-    aws_logs as logs,
 )
+from botocore.exceptions import ClientError
+
+from helpers.constants import constants
 
 # set boto3 client for amazon managged kafka
 kafkaclient = boto3.client("kafka")
@@ -20,6 +19,7 @@ esclient = boto3.client("es")
 iamclient = boto3.client("iam")
 # set the client for logs
 logs_client = boto3.client("logs")
+
 
 # helper to create updated assets
 def file_updated(file_name: str = "", updates: dict = {}):
@@ -43,8 +43,8 @@ def ensure_service_linked_role(service_name: str):
         iamclient.create_service_linked_role(AWSServiceName=service_name)
     except ClientError as err:
         if (
-            err.response["Error"]["Code"] == "InvalidInput"
-            and "has been taken in this account" in err.response["Error"]["Message"]
+                err.response["Error"]["Code"] == "InvalidInput"
+                and "has been taken in this account" in err.response["Error"]["Message"]
         ):
             return 0
         else:
@@ -73,8 +73,8 @@ def kafka_get_brokers() -> str:
         return kafka_brokers["BootstrapBrokerString"]
     except ClientError as err:
         if (
-            err.response["Error"]["Message"]
-            == "Missing required request parameters: [clusterArn]"
+                err.response["Error"]["Message"]
+                == "Missing required request parameters: [clusterArn]"
         ):
             return ""
         else:
@@ -162,8 +162,8 @@ def user_data_init(log_group_name: str = None):
         "yum install -y awslogs",
         # update log group
         f"sed -i 's#log_group_name = /var/log/messages#log_group_name = {log_group_name}#' /etc/awslogs/awslogs.conf",
-        #r"sed -i 's#[logger_reader]\nlevel=INFO#[logger_reader]\nlevel=WARNING#' /etc/awslogs/awslogs.conf",
-        #r"sed -i 's#[logger_publisher]\nlevel=INFO#[logger_publisher]\nlevel=WARNING#' /etc/awslogs/awslogs.conf",
+        # r"sed -i 's#[logger_reader]\nlevel=INFO#[logger_reader]\nlevel=WARNING#' /etc/awslogs/awslogs.conf",
+        # r"sed -i 's#[logger_publisher]\nlevel=INFO#[logger_publisher]\nlevel=WARNING#' /etc/awslogs/awslogs.conf",
         # start the awslogs
         "systemctl start awslogsd",
         # set cli default region

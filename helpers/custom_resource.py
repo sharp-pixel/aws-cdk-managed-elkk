@@ -1,4 +1,3 @@
-import os
 from aws_cdk import (
     aws_cloudformation as cfn,
     aws_lambda as lambda_,
@@ -9,7 +8,7 @@ from aws_cdk import (
 
 class CustomResource(core.Construct):
     def __init__(
-        self, scope: core.Construct, id: str, Description: str, Uuid: str, **kwargs
+            self, scope: core.Construct, id: str, Description: str, Uuid: str, **kwargs
     ) -> None:
         super().__init__(scope, id)
 
@@ -37,4 +36,3 @@ class CustomResource(core.Construct):
         )
         # response
         self.response = resource.get_att("Response")
-

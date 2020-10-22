@@ -1,10 +1,8 @@
 # import modules
 import os
-import io
+import urllib.request
 
 import boto3
-from botocore.exceptions import ClientError
-import urllib.request
 from aws_cdk import (
     core,
     aws_msk as msk,
@@ -13,18 +11,15 @@ from aws_cdk import (
     aws_s3_assets as assets,
 )
 
-kafka = boto3.client("kafka")
-
 # get constants
 from helpers.constants import constants
 from helpers.functions import (
-    file_updated,
-    kafka_get_brokers,
     ensure_service_linked_role,
-    update_kafka_configuration,
     user_data_init,
     instance_add_log_permissions,
 )
+
+kafka = boto3.client("kafka")
 
 dirname = os.path.dirname(__file__)
 external_ip = urllib.request.urlopen("https://ident.me").read().decode("utf8")
@@ -32,7 +27,7 @@ external_ip = urllib.request.urlopen("https://ident.me").read().decode("utf8")
 
 class KafkaStack(core.Stack):
     def __init__(
-        self, scope: core.Construct, id: str, vpc_stack, client: bool = True, **kwargs
+            self, scope: core.Construct, id: str, vpc_stack, client: bool = True, **kwargs
     ) -> None:
         super().__init__(scope, id, **kwargs)
 
@@ -112,7 +107,7 @@ class KafkaStack(core.Stack):
         core.Tag.add(self.kafka_cluster, "project", constants["PROJECT_TAG"])
 
         # instance for kafka client
-        if client == True:
+        if client:
             # userdata for kafka client
             kafka_client_userdata = user_data_init(log_group_name="elkk/kafka/instance")
             # create the instance
@@ -177,9 +172,9 @@ class KafkaStack(core.Stack):
             # attach the userdata
             kafka_client_instance.add_user_data(kafka_client_userdata.render())
             # add creation policy for instance (disabled as appears to be firing in error)
-            #kafka_client_instance.instance.cfn_options.creation_policy = core.CfnCreationPolicy(
+            # kafka_client_instance.instance.cfn_options.creation_policy = core.CfnCreationPolicy(
             #    resource_signal=core.CfnResourceSignal(count=1, timeout="PT10M")
-            #)
+            # )
 
     # properties
     @property

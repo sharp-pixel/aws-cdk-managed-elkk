@@ -1,6 +1,5 @@
 # the main lambda function
 def main(event: dict, context: object) -> dict:
-
     import logging as log
     import cfnresponse
     import boto3
@@ -23,7 +22,7 @@ def main(event: dict, context: object) -> dict:
 
         # Check if this is a Create and we're failing Creates
         if event["RequestType"] == "Create" and event["ResourceProperties"].get(
-            "FailCreate", False
+                "FailCreate", False
         ):
             raise RuntimeError("Create failure requested")
 
@@ -56,8 +55,8 @@ def main(event: dict, context: object) -> dict:
                     ]
                     for keypairs in bkt_tags:
                         if (
-                            keypairs["Key"] == "aws:cloudformation:stack-name"
-                            and keypairs["Value"] == "elkk-kibana"
+                                keypairs["Key"] == "aws:cloudformation:stack-name"
+                                and keypairs["Value"] == "elkk-kibana"
                         ):
                             kibana_bucket_name = bkt["Name"]
                 except ClientError:
@@ -98,4 +97,3 @@ def main(event: dict, context: object) -> dict:
         log.exception(e)
         # cfnresponse's error message is always "see CloudWatch"
         cfnresponse.send(event, context, cfnresponse.FAILED, {}, physical_id)
-

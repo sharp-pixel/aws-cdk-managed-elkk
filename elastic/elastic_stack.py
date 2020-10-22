@@ -1,33 +1,33 @@
 # import modules
+import urllib.request
+
 from aws_cdk import (
     core,
     aws_ec2 as ec2,
     aws_elasticsearch as aes,
     aws_iam as iam,
-    aws_s3_assets as assets,
     aws_logs as logs,
 )
-import os
+
 from helpers.constants import constants
 from helpers.functions import (
     ensure_service_linked_role,
     user_data_init,
     instance_add_log_permissions,
 )
-import urllib.request
 
 external_ip = urllib.request.urlopen("https://ident.me").read().decode("utf8")
 
 
 class ElasticStack(core.Stack):
     def __init__(
-        self,
-        scope: core.Construct,
-        id: str,
-        vpc_stack,
-        # kafka_stack,
-        client: bool = True,
-        **kwargs,
+            self,
+            scope: core.Construct,
+            id: str,
+            vpc_stack,
+            # kafka_stack,
+            client: bool = True,
+            **kwargs,
     ) -> None:
         super().__init__(scope, id, **kwargs)
 
@@ -51,8 +51,8 @@ class ElasticStack(core.Stack):
             description="elastic client security group",
             allow_all_outbound=True,
         )
-        core.Tag.add(elastic_client_security_group, "project", constants["PROJECT_TAG"])
-        core.Tag.add(elastic_client_security_group, "Name", "elastic_client_sg")
+        core.Tags.of(elastic_client_security_group).add("project", constants["PROJECT_TAG"])
+        core.Tags.of(elastic_client_security_group).add("Name", "elastic_client_sg")
         # Open port 22 for SSH
         elastic_client_security_group.add_ingress_rule(
             ec2.Peer.ipv4(f"{external_ip}/32"), ec2.Port.tcp(22), "from own public ip",
@@ -70,8 +70,8 @@ class ElasticStack(core.Stack):
             description="elastic security group",
             allow_all_outbound=True,
         )
-        core.Tag.add(self.elastic_security_group, "project", constants["PROJECT_TAG"])
-        core.Tag.add(self.elastic_security_group, "Name", "elastic_sg")
+        core.Tags.of(self.elastic_security_group).add("project", constants["PROJECT_TAG"])
+        core.Tags.of(self.elastic_security_group).add("Name", "elastic_sg")
 
         # ingress for elastic from self
         self.elastic_security_group.connections.allow_from(
@@ -90,7 +90,7 @@ class ElasticStack(core.Stack):
 
         # elastic policy
         elastic_policy = iam.PolicyStatement(
-            effect=iam.Effect.ALLOW, actions=["es:*",], resources=["*"],
+            effect=iam.Effect.ALLOW, actions=["es:*", ], resources=["*"],
         )
         elastic_policy.add_any_principal()
         elastic_document = iam.PolicyDocument()
@@ -103,7 +103,7 @@ class ElasticStack(core.Stack):
             "zoneAwarenessEnabled": True,
             "zoneAwarenessConfig": {"availabilityZoneCount": 3},
         }
-        if constants["ELASTIC_DEDICATED_MASTER"] == True:
+        if constants["ELASTIC_DEDICATED_MASTER"]:
             cluster_config["dedicatedMasterEnabled"] = True
             cluster_config["dedicatedMasterType"] = constants["ELASTIC_MASTER_INSTANCE"]
             cluster_config["dedicatedMasterCount"] = constants["ELASTIC_MASTER_COUNT"]
@@ -120,13 +120,13 @@ class ElasticStack(core.Stack):
                 "subnetIds": vpc_stack.get_vpc_private_subnet_ids,
             },
             access_policies=elastic_document,
-            #log_publishing_options={"enabled": True},
-            #cognito_options={"enabled": True},
+            # log_publishing_options={"enabled": True},
+            # cognito_options={"enabled": True},
         )
-        core.Tag.add(self.elastic_domain, "project", constants["PROJECT_TAG"])
+        core.Tags.of(self.elastic_domain).add("project", constants["PROJECT_TAG"])
 
         # instance for elasticsearch
-        if client == True:
+        if client:
             # userdata for kafka client
             elastic_userdata = user_data_init(log_group_name="elkk/elastic/instance")
             # create the instance
@@ -143,7 +143,7 @@ class ElasticStack(core.Stack):
                 security_group=elastic_client_security_group,
                 user_data=elastic_userdata,
             )
-            core.Tag.add(elastic_instance, "project", constants["PROJECT_TAG"])
+            core.Tags.of(elastic_instance).add("project", constants["PROJECT_TAG"])
             # needs elastic domain to be available
             elastic_instance.node.add_dependency(self.elastic_domain)
             # create policies for EC2 to connect to Elastic

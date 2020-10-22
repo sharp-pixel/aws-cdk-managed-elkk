@@ -8,13 +8,14 @@ from aws_cdk import (
     aws_iam as iam,
     aws_s3_assets as assets,
 )
+
+from helpers.constants import constants
 from helpers.functions import (
     file_updated,
     kafka_get_brokers,
     user_data_init,
     instance_add_log_permissions,
 )
-from helpers.constants import constants
 
 dirname = os.path.dirname(__file__)
 external_ip = urllib.request.urlopen("https://ident.me").read().decode("utf8")
@@ -22,7 +23,7 @@ external_ip = urllib.request.urlopen("https://ident.me").read().decode("utf8")
 
 class FilebeatStack(core.Stack):
     def __init__(
-        self, scope: core.Construct, id: str, vpc_stack, kafka_stack, **kwargs
+            self, scope: core.Construct, id: str, vpc_stack, kafka_stack, **kwargs
     ) -> None:
         super().__init__(scope, id, **kwargs)
 
@@ -69,7 +70,7 @@ class FilebeatStack(core.Stack):
         # create policies for EC2 to connect to kafka
         access_kafka_policy = iam.PolicyStatement(
             effect=iam.Effect.ALLOW,
-            actions=["kafka:ListClusters", "kafka:GetBootstrapBrokers",],
+            actions=["kafka:ListClusters", "kafka:GetBootstrapBrokers", ],
             resources=["*"],
         )
         # add the role permissions
