@@ -5,12 +5,12 @@ python -m venv .env
 # download requirements
 .env/bin/python -m pip install -r requirements.txt
 # create the key pair
-aws ec2 create-key-pair --key-name yourkeypair --query 'KeyMaterial' --output text > yourkeypair.pem --region us-east-1
+aws ec2 create-key-pair --key-name elk-key-pair --query 'KeyMaterial' --output text > elk-key-pair.pem --region us-east-1
 # update key_pair permissions
-chmod 400 yourkeypair.pem
+chmod 400 elk-key-pair.pem
 # move key_pair to .ssh
-mv -f yourkeypair.pem $HOME/.ssh/yourkeypair.pem
+mv -f elk-key-pair.pem $HOME/.ssh/elk-key-pair.pem
 # start the ssh agent
 eval `ssh-agent -s`
 # add your key to keychain
-ssh-add -k ~/.ssh/yourkeypair.pem 
+ssh-add -k ~/.ssh/elk-key-pair.pem 
