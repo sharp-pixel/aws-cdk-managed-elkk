@@ -10,6 +10,8 @@ from aws_cdk import (
     aws_ecr_assets as ecr_assets,
     aws_logs as logs,
 )
+from aws_cdk.aws_ec2 import SubnetSelection
+
 from helpers.constants import constants
 from helpers.functions import (
     file_updated,
@@ -29,13 +31,13 @@ external_ip = urllib.request.urlopen("https://ident.me").read().decode("utf8")
 
 class LogstashStack(core.Stack):
     def __init__(
-        self,
-        scope: core.Construct,
-        id: str,
-        vpc_stack,
-        logstash_ec2=True,
-        logstash_fargate=True,
-        **kwargs,
+            self,
+            scope: core.Construct,
+            id: str,
+            vpc_stack,
+            logstash_ec2=True,
+            logstash_fargate=True,
+            **kwargs,
     ) -> None:
         super().__init__(scope, id, **kwargs)
 
@@ -48,8 +50,8 @@ class LogstashStack(core.Stack):
                 bkt_tags = s3client.get_bucket_tagging(Bucket=bkt["Name"])["TagSet"]
                 for keypairs in bkt_tags:
                     if (
-                        keypairs["Key"] == "aws:cloudformation:stack-name"
-                        and keypairs["Value"] == "elkk-athena"
+                            keypairs["Key"] == "aws:cloudformation:stack-name"
+                            and keypairs["Value"] == "elkk-athena"
                     ):
                         s3_bucket_name = bkt["Name"]
             except ClientError as err:
@@ -91,7 +93,7 @@ class LogstashStack(core.Stack):
                 "$elkk_region": os.environ["CDK_DEFAULT_REGION"],
             },
         )
-        logstash_conf = assets.Asset(self, "logstash.conf", path=logstash_conf_asset,)
+        logstash_conf = assets.Asset(self, "logstash.conf", path=logstash_conf_asset, )
 
         # logstash security group
         logstash_security_group = ec2.SecurityGroup(
@@ -112,7 +114,7 @@ class LogstashStack(core.Stack):
         # get security group for kafka
         ec2client = boto3.client("ec2")
         security_groups = ec2client.describe_security_groups(
-            Filters=[{"Name": "tag-value", "Values": [constants["PROJECT_TAG"],]},],
+            Filters=[{"Name": "tag-value", "Values": [constants["PROJECT_TAG"]]}],
         )
 
         # if kafka sg does not exist ... don't add it
@@ -166,7 +168,7 @@ class LogstashStack(core.Stack):
         # kafka policy
         access_kafka_policy = iam.PolicyStatement(
             effect=iam.Effect.ALLOW,
-            actions=["kafka:ListClusters", "kafka:GetBootstrapBrokers",],
+            actions=["kafka:ListClusters", "kafka:GetBootstrapBrokers"],
             resources=["*"],
         )
 
@@ -190,7 +192,7 @@ class LogstashStack(core.Stack):
                     generation=ec2.AmazonLinuxGeneration.AMAZON_LINUX_2
                 ),
                 vpc=vpc_stack.get_vpc,
-                vpc_subnets={"subnet_type": ec2.SubnetType.PUBLIC},
+                vpc_subnets=SubnetSelection(subnet_type=ec2.SubnetType.PUBLIC),
                 key_name=constants["KEY_PAIR"],
                 security_group=logstash_security_group,
                 user_data=logstash_userdata,
@@ -305,8 +307,8 @@ class LogstashStack(core.Stack):
                         type=ecs.DeploymentControllerType.ECS
                     ),
                 )
-                .auto_scale_task_count(min_capacity=3, max_capacity=10)
-                .scale_on_cpu_utilization(
+                    .auto_scale_task_count(min_capacity=3, max_capacity=10)
+                    .scale_on_cpu_utilization(
                     "logstash_scaling",
                     target_utilization_percent=75,
                     scale_in_cooldown=core.Duration.seconds(60),

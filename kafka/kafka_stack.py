@@ -12,6 +12,8 @@ from aws_cdk import (
 )
 
 # get constants
+from aws_cdk.aws_ec2 import SubnetSelection
+
 from helpers.constants import constants
 from helpers.functions import (
     ensure_service_linked_role,
@@ -47,10 +49,8 @@ class KafkaStack(core.Stack):
             description="kafka client security group",
             allow_all_outbound=True,
         )
-        core.Tag.add(
-            self.kafka_client_security_group, "project", constants["PROJECT_TAG"]
-        )
-        core.Tag.add(self.kafka_client_security_group, "Name", "kafka_client_sg")
+        core.Tags.of(self.kafka_client_security_group).add("project", constants["PROJECT_TAG"])
+        core.Tags.of(self.kafka_client_security_group).add("Name", "kafka_client_sg")
 
         # Open port 22 for SSH
         self.kafka_client_security_group.add_ingress_rule(
@@ -65,8 +65,8 @@ class KafkaStack(core.Stack):
             description="kafka security group",
             allow_all_outbound=True,
         )
-        core.Tag.add(self.kafka_security_group, "project", constants["PROJECT_TAG"])
-        core.Tag.add(self.kafka_security_group, "Name", "kafka_sg")
+        core.Tags.of(self.kafka_security_group).add("project", constants["PROJECT_TAG"])
+        core.Tags.of(self.kafka_security_group).add("Name", "kafka_sg")
 
         # add ingress for kafka security group
         self.kafka_security_group.connections.allow_from(
@@ -104,7 +104,7 @@ class KafkaStack(core.Stack):
             number_of_broker_nodes=constants["KAFKA_BROKER_NODES"],
             enhanced_monitoring="DEFAULT",
         )
-        core.Tag.add(self.kafka_cluster, "project", constants["PROJECT_TAG"])
+        core.Tags.of(self.kafka_cluster).add("project", constants["PROJECT_TAG"])
 
         # instance for kafka client
         if client:
@@ -119,7 +119,7 @@ class KafkaStack(core.Stack):
                     generation=ec2.AmazonLinuxGeneration.AMAZON_LINUX_2
                 ),
                 vpc=vpc_stack.get_vpc,
-                vpc_subnets={"subnet_type": ec2.SubnetType.PUBLIC},
+                vpc_subnets=SubnetSelection(subnet_type=ec2.SubnetType.PUBLIC),
                 key_name=constants["KEY_PAIR"],
                 security_group=self.kafka_client_security_group,
                 user_data=kafka_client_userdata,

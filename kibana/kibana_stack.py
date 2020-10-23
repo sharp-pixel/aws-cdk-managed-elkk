@@ -73,7 +73,7 @@ class KibanaStack(core.Stack):
         core.Tags.of(kibana_lambda).add("project", constants["PROJECT_TAG"])
         # create policies for the lambda
         kibana_lambda_policy = iam.PolicyStatement(
-            effect=iam.Effect.ALLOW, actions=["s3:*", ], resources=["*"],
+            effect=iam.Effect.ALLOW, actions=["s3:*"], resources=["*"],
         )
         # add the role permissions
         kibana_lambda.add_to_role_policy(statement=kibana_lambda_policy)
@@ -152,7 +152,7 @@ class KibanaStack(core.Stack):
             ),
             iam.PolicyStatement(
                 effect=iam.Effect.ALLOW,
-                actions=["s3:DeleteObject", ],
+                actions=["s3:DeleteObject"],
                 resources=[f"{kibana_bucket.bucket_arn}/*"],
             ),
         ]
