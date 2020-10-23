@@ -38,7 +38,7 @@ class FilebeatStack(core.Stack):
             path=os.path.join(dirname, "log_generator_requirements.txt"),
         )
 
-        # get kakfa brokers
+        # get Kafka brokers
         kafka_brokers = f'''"{kafka_get_brokers().replace(",", '", "')}"'''
 
         # update filebeat.yml to .asset
