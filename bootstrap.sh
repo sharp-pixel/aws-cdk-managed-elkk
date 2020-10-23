@@ -9,8 +9,8 @@ aws ec2 create-key-pair --key-name elk-key-pair --query 'KeyMaterial' --output t
 # update key_pair permissions
 chmod 400 elk-key-pair.pem
 # move key_pair to .ssh
-mv -f elk-key-pair.pem $HOME/.ssh/elk-key-pair.pem
+mv -f elk-key-pair.pem "$HOME/.ssh/elk-key-pair.pem"
 # start the ssh agent
-eval `ssh-agent -s`
+eval "$(ssh-agent -s)"
 # add your key to keychain
-ssh-add -k ~/.ssh/elk-key-pair.pem 
+ssh-add -k ~/.ssh/elk-key-pair.pem
